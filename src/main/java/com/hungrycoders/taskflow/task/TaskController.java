@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.hungrycoders.taskflow.WelcomeController.Task;
-import com.hungrycoders.taskflow.WelcomeController.TaskRequest;
+import com.hungrycoders.taskflow.task.dto.CreateTaskRequest;
+import com.hungrycoders.taskflow.task.dto.TaskResponse;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/tasks")
@@ -29,8 +31,8 @@ public class TaskController {
 
 	/** GET /tasks — return the whole collection. */
 	@GetMapping
-	public List<Task> list() {
-		return taskService.finAll();
+	public List<TaskResponse> list() {
+		return taskService.findAll().stream().map(TaskResponse::from).toList();
 	}
 
 	/** GET /tasks/{id} — return one task, or 404 if it doesn't exist. */
@@ -42,17 +44,18 @@ public class TaskController {
 
 	/** POST /tasks — create a task, return 201 with a Location header. */
 	@PostMapping
-	public ResponseEntity<Task> create(@RequestBody TaskRequest request) {
-		Task created = taskService.create(request);
+	public ResponseEntity<TaskResponse> create(@Valid@RequestBody CreateTaskRequest request) {
+		Task created = taskService.create(request.title(), request.completed());
+		TaskResponse body = TaskResponse.from(created);
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(created.id())
 				.toUri();
 
-		return ResponseEntity.created(location).body(created);
+		return ResponseEntity.created(location).body(body);
 	}
 
 	/** PUT /tasks/{id} — replace a task entirely, or 404 if it doesn't exist. */
 	@PutMapping("/{id}")
-	public ResponseEntity<Task> replace(@PathVariable Long id, @RequestBody TaskRequest request)
+	public ResponseEntity<Task> replace(@PathVariable Long id, @RequestBody CreateTaskRequest request)
 	{
 		return taskService.replace(id, request)
 				.map(ResponseEntity::ok)

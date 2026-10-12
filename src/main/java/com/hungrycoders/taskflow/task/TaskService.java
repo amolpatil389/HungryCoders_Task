@@ -8,8 +8,8 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.stereotype.Service;
 
-import com.hungrycoders.taskflow.WelcomeController.Task;
-import com.hungrycoders.taskflow.WelcomeController.TaskRequest;
+
+import com.hungrycoders.taskflow.task.dto.CreateTaskRequest;
 
 @Service
 public class TaskService {
@@ -20,18 +20,26 @@ public class TaskService {
 
 	private final AtomicLong sequence = new AtomicLong();
 
-	public List<Task> finAll() {
+	public List<Task> findAll() {
 		return List.copyOf(store.values());
 	}
 
 	public Optional<Task> findById(Long id) {
-		return Optional.ofNullable(store.get(id));
+		//return Optional.ofNullable(store.get(id));
+		
+		 Task task = store.get(id);
+		    if (task == null) {
+		        throw new TaskNotFoundException(id);
+		    }
+		    return Optional.ofNullable(store.get(id));
+		
+		
 	}
 
-	public Task create(TaskRequest request) {
+	public Task create(String title, boolean completed) {
 		long id = sequence.incrementAndGet(); // server assigns the id
 
-		Task task = new Task(id, request.title(), request.completed());
+		Task task = new Task(id ,title, completed);
 
 		store.put(id, task);
 
@@ -41,7 +49,7 @@ public class TaskService {
 
 	/** full replacement Returns Empty if the task doesn't exist. */
 
-	public Optional<Task> replace(Long id, TaskRequest request) {
+	public Optional<Task> replace(Long id, CreateTaskRequest request) {
 		if (!store.containsKey(id)) {
 			return Optional.empty();
 		}

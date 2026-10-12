@@ -19,9 +19,9 @@ public class WelcomeController {
 		//return "Welcome to TaskFlow! Your Spring Boot app is running.";
 	}
 	
-	public record Task(Long id,String title,boolean completed) {}
+	//public record Task(Long id,String title,boolean completed) {}
 	
-	public record TaskRequest(String title, boolean completed) {}
+	//public record TaskRequest(String title, boolean completed) {}
 	
 	
 	
